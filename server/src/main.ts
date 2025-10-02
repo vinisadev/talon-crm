@@ -8,7 +8,18 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('TalonCRM API')
     .setDescription('A comprehensive Customer Relationship Management API for managing contacts, interactions, and sales pipelines')
-    .setVersion('1.0')
+    .setVersion('0.0.1')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .addTag('Authentication', 'User authentication and authorization')
     .addTag('Contacts', 'Contact management and customer data')
     .addTag('Interactions', 'Customer interaction tracking and history')
