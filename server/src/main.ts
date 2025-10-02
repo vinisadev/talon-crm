@@ -5,6 +5,21 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Enable CORS for frontend communication
+  const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+    : [
+        'http://localhost:3000',
+        'http://localhost:3001',
+      ];
+
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
   const config = new DocumentBuilder()
     .setTitle('TalonCRM API')
     .setDescription('A comprehensive Customer Relationship Management API for managing contacts, interactions, and sales pipelines')
