@@ -8,6 +8,7 @@ import { ContactsModule } from './contacts/contacts.module';
 import { InteractionsModule } from './interactions/interactions.module';
 import { PipelinesModule } from './pipelines/pipelines.module';
 import { ReportsModule } from './reports/reports.module';
+import { OrganizationsModule } from './organizations/organizations.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { ReportsModule } from './reports/reports.module';
     ContactsModule,
     InteractionsModule,
     PipelinesModule,
-    ReportsModule
+    ReportsModule,
+    OrganizationsModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

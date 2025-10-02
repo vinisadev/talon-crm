@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaService } from '../prisma/prisma.service';
+import { OrganizationsService } from '../organizations/organizations.service';
 
 /**
  * Authentication module that provides JWT-based authentication
@@ -33,7 +34,7 @@ import { PrismaService } from '../prisma/prisma.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, PrismaService],
+  providers: [AuthService, JwtStrategy, PrismaService, OrganizationsService],
   exports: [AuthService, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

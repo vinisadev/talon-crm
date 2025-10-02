@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { OrganizationsService } from '../organizations/organizations.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtPayload } from './jwt.strategy';
 
@@ -13,7 +14,8 @@ export interface RegisterDto {
   email: string;
   password: string;
   name?: string;
-  organizationId: string;
+  organizationId?: string;
+  organizationName?: string;
 }
 
 /**
@@ -55,6 +57,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private organizationsService: OrganizationsService,
   ) {}
 
   /**
@@ -63,10 +66,10 @@ export class AuthService {
    * @param registerDto - User registration data
    * @returns Promise<AuthResponse> - Authentication response with token and user data
    * @throws ConflictException - If email already exists
-   * @throws BadRequestException - If organization doesn't exist
+   * @throws BadRequestException - If organization doesn't exist or invalid data provided
    */
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
-    const { email, password, name, organizationId } = registerDto;
+    const { email, password, name, organizationId, organizationName } = registerDto;
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
@@ -77,13 +80,74 @@ export class AuthService {
       throw new ConflictException('User with this email already exists');
     }
 
-    // Verify organization exists
-    const organization = await this.prisma.organization.findUnique({
-      where: { id: organizationId },
-    });
+    let finalOrganizationId: string;
 
-    if (!organization) {
-      throw new BadRequestException('Organization not found');
+    // Handle organization - either use existing or create new one
+    if (organizationId) {
+      // Use existing organization
+      const organization = await this.prisma.organization.findUnique({
+        where: { id: organizationId },
+      });
+
+      if (!organization) {
+        throw new BadRequestException('Organization not found');
+      }
+      finalOrganizationId = organizationId;
+    } else if (organizationName) {
+      // Create new organization first
+      const newOrganization = await this.prisma.organization.create({
+        data: {
+          name: organizationName,
+        },
+      });
+      finalOrganizationId = newOrganization.id;
+
+      // Hash password
+      const saltRounds = 12;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
+      // Create user with ADMIN role and the new organization
+      const user = await this.prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          name,
+          role: 'ADMIN', // User who creates organization gets ADMIN role
+          organizationId: finalOrganizationId,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          organizationId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      // Generate JWT token
+      const payload: JwtPayload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        organizationId: user.organizationId,
+      };
+
+      const access_token = this.jwtService.sign(payload);
+
+      return {
+        access_token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          organizationId: user.organizationId,
+        },
+      };
+    } else {
+      throw new BadRequestException('Either organizationId or organizationName must be provided');
     }
 
     // Hash password
@@ -96,7 +160,7 @@ export class AuthService {
         email,
         passwordHash,
         name,
-        organizationId,
+        organizationId: finalOrganizationId,
       },
       select: {
         id: true,

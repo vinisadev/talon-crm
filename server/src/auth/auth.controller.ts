@@ -8,17 +8,51 @@ import { JwtAuthGuard } from './jwt-auth.guard';
  * Register request DTO for Swagger documentation
  */
 class RegisterRequestDto {
+  /**
+   * User's email address (must be unique)
+   * @example john.doe@example.com
+   */
   email: string;
+
+  /**
+   * User's password (minimum 8 characters, should include letters, numbers, and special characters)
+   * @example SecurePassword123!
+   */
   password: string;
+
+  /**
+   * User's full name (optional)
+   * @example John Doe
+   */
   name?: string;
-  organizationId: string;
+  
+  /**
+   * Organization ID that the user belongs to (optional if organizationName is provided)
+   * @example org_123456789
+   */
+  organizationId?: string;
+
+  /**
+   * Organization name to create (optional if organizationId is provided)
+   * @example Acme Corporation
+   */
+  organizationName?: string;
 }
 
 /**
  * Login request DTO for Swagger documentation
  */
 class LoginRequestDto {
+  /**
+   * User's email address
+   * @example john.doe@example.com
+   */
   email: string;
+  
+  /**
+   * User's password
+   * @example SecurePassword123!
+   */
   password: string;
 }
 
@@ -58,9 +92,43 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Register a new user',
-    description: 'Creates a new user account and returns a JWT access token',
+    description: 'Creates a new user account and returns a JWT access token. If organizationName is provided, a new organization will be created and the user will automatically be assigned ADMIN role.',
   })
-  @ApiBody({ type: RegisterRequestDto })
+  @ApiBody({
+    type: RegisterRequestDto,
+    description: 'User registration data',
+    examples: {
+      example1: {
+        summary: 'Register with existing organization',
+        description: 'Register a new user with an existing organization ID',
+        value: {
+          email: 'john.doe@example.com',
+          password: 'SecurePassword123!',
+          name: 'John Doe',
+          organizationId: 'org_123456789',
+        },
+      },
+      example2: {
+        summary: 'Register with new organization (becomes admin)',
+        description: 'Register a new user and create a new organization. The user will automatically be assigned ADMIN role.',
+        value: {
+          email: 'jane.smith@company.com',
+          password: 'MySecurePassword456!',
+          name: 'Jane Smith',
+          organizationName: 'Tech Solutions Inc.',
+        },
+      },
+      example3: {
+        summary: 'Register without name (becomes admin)',
+        description: 'Register a user without providing a name and create a new organization. The user will automatically be assigned ADMIN role.',
+        value: {
+          email: 'admin@company.com',
+          password: 'AdminPassword789!',
+          organizationName: 'StartupXYZ',
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: 201,
     description: 'User successfully registered',
@@ -115,7 +183,28 @@ export class AuthController {
     summary: 'Login user',
     description: 'Authenticates a user with email and password, returns JWT access token',
   })
-  @ApiBody({ type: LoginRequestDto })
+  @ApiBody({
+    type: LoginRequestDto,
+    description: 'User login credentials',
+    examples: {
+      example1: {
+        summary: 'Standard user login',
+        description: 'Login with email and password',
+        value: {
+          email: 'john.doe@example.com',
+          password: 'SecurePassword123!',
+        }
+      },
+      example2: {
+        summary: 'Admin login',
+        description: 'Login with email and password for admin user',
+        value: {
+          email: 'admin@company.com',
+          password: 'AdminPassword789!',
+        },
+      },
+    }
+  })
   @ApiResponse({
     status: 200,
     description: 'User successfully authenticated',

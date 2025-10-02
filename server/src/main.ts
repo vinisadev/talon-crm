@@ -21,6 +21,7 @@ async function bootstrap() {
       'JWT-auth',
     )
     .addTag('Authentication', 'User authentication, registration, and profile management')
+    .addTag('Organizations', 'Organization management and administration')
     .addTag('Contacts', 'Contact management and organization')
     .addTag('Interactions', 'Customer interaction tracking and history')
     .addTag('Pipelines', 'Sales pipeline and opportunity management')
