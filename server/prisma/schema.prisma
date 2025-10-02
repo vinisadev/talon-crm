@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// ========== CORE MODELS ==========
+
+model Organization {
+  id String @id @default(cuid())
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+  contacts Contact[]
+  deals Deal[]
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  passwordHash String
+  name String?
+  role UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  notes Note[]
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+/// ========== CRM MODELS ==========
+
+model Contact {
+  id String @id @default(cuid())
+  firstName String?
+  lastName String?
+  email String? @unique
+  phone String?
+  company String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  notes Note[]
+  deals Deal[] // a contact can be linked to multiple deals
+}
+
+model Note {
+  id String @id @default(cuid())
+  content String
+  createdAt DateTime @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id])
+  contactId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model Deal {
+  id String @id @default(cuid())
+  title String
+  value Float?
+  stage DealStage @default(NEW)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  contact Contact? @relation(fields: [contactId], references: [id])
+  contactId String?
+}
+
+enum DealStage {
+  NEW
+  CONTACTED
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
