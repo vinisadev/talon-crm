@@ -20,11 +20,11 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    .addTag('Authentication', 'User authentication and authorization')
-    .addTag('Contacts', 'Contact management and customer data')
+    .addTag('Authentication', 'User authentication, registration, and profile management')
+    .addTag('Contacts', 'Contact management and organization')
     .addTag('Interactions', 'Customer interaction tracking and history')
     .addTag('Pipelines', 'Sales pipeline and opportunity management')
-    .addTag('Reports', 'Analytics and reporting functionality')
+    .addTag('Reports', 'Business analytics and reporting functionality')
     .addTag('System', 'System health and monitoring endpoints')
     .addServer('http://localhost:3000', 'Development server')
     .addServer('https://api.taloncrm.com', 'Production server')
