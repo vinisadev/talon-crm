@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { HealthCheckDto } from './dto/health-check.dto';
 
 @Injectable()
 export class AppService {
-  getHealthCheck(): { status: string; timestamp: string; uptime: number } {
+  getHealthCheck(): HealthCheckDto {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
