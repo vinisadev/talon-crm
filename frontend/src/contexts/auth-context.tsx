@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { apiClient, User, LoginRequest, RegisterRequest } from '@/lib/api';
 
 interface AuthContextType {
@@ -25,8 +25,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await apiClient.login(credentials);
       setUser(response.user);
-    } catch (error) {
-      throw error;
+    } catch {
+      throw new Error('Login failed');
     }
   };
 
@@ -34,8 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await apiClient.register(userData);
       setUser(response.user);
-    } catch (error) {
-      throw error;
+    } catch {
+      throw new Error('Registration failed');
     }
   };
 
@@ -44,17 +44,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       if (apiClient.isAuthenticated()) {
         const userData = await apiClient.getProfile();
         setUser(userData);
       }
-    } catch (error) {
+    } catch {
       // Token might be invalid, logout user
       logout();
     }
-  };
+  }, []);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (apiClient.isAuthenticated()) {
           await refreshUser();
         }
-      } catch (error) {
+      } catch {
         // Token is invalid, clear it
         apiClient.logout();
       } finally {
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, []);
+  }, [refreshUser]);
 
   const value: AuthContextType = {
     user,

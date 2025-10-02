@@ -68,6 +68,7 @@ export default function RegisterPage() {
       setIsLoading(true);
       setError(null);
       
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, organizationType, ...registerData } = data;
       
       const payload = {
