@@ -1,4 +1,22 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Get API base URL from environment variable with fallback
+const getApiBaseUrl = (): string => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  if (!apiUrl) {
+    console.warn(
+      'NEXT_PUBLIC_API_URL environment variable is not set. Using default: http://localhost:3001'
+    );
+    return 'http://localhost:3001';
+  }
+  
+  // Remove trailing slash if present
+  return apiUrl.replace(/\/$/, '');
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Export the API base URL for use in other parts of the application
+export const getApiUrl = () => API_BASE_URL;
 
 export interface User {
   id: string;
